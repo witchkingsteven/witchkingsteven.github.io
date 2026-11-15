@@ -1,11 +1,12 @@
 ---
 import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
-import { profile } from '../data/profile';
+import { CAREER_START, profile, yearsSince } from '../data/profile';
 import { getPosts } from '../lib/posts';
 
 const latest = (await getPosts()).slice(0, 5);
 const current = profile.experience[0];
+const buildYears = yearsSince(CAREER_START).toFixed(2);
 ---
 
 <Base>
@@ -40,11 +41,36 @@ const current = profile.experience[0];
 	</section>
 
 	<section class="container stats" aria-label="Highlights">
-		<div><strong>{profile.yearsExperience}</strong><span>years in security</span></div>
+		<div class="counter">
+			<strong data-since={CAREER_START} aria-hidden="true">{buildYears}</strong>
+			<span class="sr-only">{profile.yearsExperience} years in security, since January 2015</span>
+			<span aria-hidden="true">years in security <span class="live"><i></i>live</span></span>
+		</div>
 		<div><strong>{profile.experience.length}</strong><span>organizations</span></div>
 		<div><strong>BOTS</strong><span>Splunk Boss of the SOC CTF winner</span></div>
 	</section>
 </Base>
+
+<script>
+	// Live counter: years since CAREER_START, ticking every frame.
+	// Reduced-motion users get a static 2-decimal value instead.
+	const el = document.querySelector<HTMLElement>('.counter strong[data-since]');
+	if (el) {
+		const start = new Date(el.dataset.since!).getTime();
+		const MS_PER_YEAR = 365.2425 * 24 * 60 * 60 * 1000;
+		const years = () => (Date.now() - start) / MS_PER_YEAR;
+		const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+		if (reduced) {
+			el.textContent = years().toFixed(2);
+		} else {
+			const tick = () => {
+				el.textContent = years().toFixed(9);
+				requestAnimationFrame(tick);
+			};
+			requestAnimationFrame(tick);
+		}
+	}
+</script>
 
 <style>
 	.hero {
@@ -167,5 +193,39 @@ const current = profile.experience[0];
 	.stats span {
 		color: var(--muted);
 		font-size: 0.92rem;
+	}
+	.counter strong {
+		font-variant-numeric: tabular-nums;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: clip;
+	}
+	.live {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		margin-left: 6px;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		color: var(--accent-ink);
+	}
+	.live i {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: var(--accent);
+		animation: pulse 2s ease-in-out infinite;
+	}
+	@keyframes pulse {
+		50% {
+			opacity: 0.3;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.live i {
+			animation: none;
+		}
 	}
 </style>

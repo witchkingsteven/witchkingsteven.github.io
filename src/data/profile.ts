@@ -1,15 +1,24 @@
 // Source: LinkedIn profile export (Profile.pdf), November 2026.
 // Edit here to update the home and about pages.
 
+/** Start of security career, used for the live "years in security" counter.
+ *  Earliest listed role: Princeton University internship, Jan 2015. */
+export const CAREER_START = '2015-01-01T00:00:00-05:00';
+
+const MS_PER_YEAR = 365.2425 * 24 * 60 * 60 * 1000;
+export const yearsSince = (iso: string, now = Date.now()) => (now - new Date(iso).getTime()) / MS_PER_YEAR;
+// Whole years as of build time (rounded), used in prose.
+const years = Math.round(yearsSince(CAREER_START));
+
 export const profile = {
 	name: 'Steven Seguinot Alvarez',
 	shortName: 'Steven Seguinot',
 	headline: 'Senior Security Engineer',
 	tagline: 'Detection engineering · Security automation · Incident command',
 	location: 'New York City Metropolitan Area',
-	yearsExperience: 12,
+	yearsExperience: years,
 	summary: [
-		'Senior Security Engineer with 12 years of experience in cybersecurity, specializing in security automation, detection engineering, and incident command. I build and scale security operations that help organizations detect faster, respond smarter, and reduce operational friction.',
+		`Senior Security Engineer with ${years} years of experience in cybersecurity, specializing in security automation, detection engineering, and incident command. I build and scale security operations that help organizations detect faster, respond smarter, and reduce operational friction.`,
 		'My background includes designing SOAR workflows, leveraging AI to enhance investigations and decision-making, and building detections informed by CISA KEV, threat intelligence, and exposure insights from ASPM. I focus on identifying what truly matters, determining whether the business is affected, and driving rapid remediation by bringing the right people into the process quickly.',
 		'I’m especially passionate about building security programs that are efficient, resilient, and deeply aligned with real-world threat activity.',
 	],
