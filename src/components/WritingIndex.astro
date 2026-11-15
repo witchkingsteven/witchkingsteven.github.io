@@ -1,0 +1,114 @@
+---
+// Shared body for /writing/ and /writing/<type>/.
+import PostList from './PostList.astro';
+import { POST_TYPES, type PostType } from '../consts';
+import { getPosts, groupTags, typeUrl } from '../lib/posts';
+
+interface Props {
+	type?: PostType;
+}
+
+const { type } = Astro.props;
+const all = await getPosts();
+const posts = type ? all.filter((p) => p.data.type === type) : all;
+const types = Object.keys(POST_TYPES) as PostType[];
+const counts = Object.fromEntries(types.map((t) => [t, all.filter((p) => p.data.type === t).length]));
+const tags = groupTags(all);
+---
+
+<div class="container narrow-ish">
+	<p class="eyebrow">Writing</p>
+	<h1>{type ? POST_TYPES[type].plural : 'Everything I write'}</h1>
+	<p class="blurb">
+		{type ? POST_TYPES[type].blurb : 'Technical write-ups, blog posts, and journal entries, newest first.'}
+	</p>
+
+	<nav class="filters" aria-label="Filter by type">
+		<a href="/writing/" aria-current={!type ? 'page' : undefined}>All <span>{all.length}</span></a>
+		{
+			types.map((t) => (
+				<a href={typeUrl(t)} aria-current={type === t ? 'page' : undefined}>
+					<span class="badge" data-type={t}>
+						{POST_TYPES[t].plural}
+					</span>
+					<span>{counts[t]}</span>
+				</a>
+			))
+		}
+	</nav>
+
+	<PostList posts={posts} showType={!type} />
+
+	{
+		tags.length > 0 && (
+			<section class="tags">
+				<h2>Tags</h2>
+				<div>
+					{tags.map((t) => (
+						<a class="tag" href={`/tags/${t.slug}/`}>
+							#{t.label}
+						</a>
+					))}
+				</div>
+			</section>
+		)
+	}
+</div>
+
+<style>
+	.narrow-ish {
+		max-width: 52rem;
+		padding-top: 3rem;
+	}
+	h1 {
+		margin: 0.3rem 0 0.4rem;
+	}
+	.blurb {
+		color: var(--ink-2);
+		margin: 0 0 1.8rem;
+	}
+	.filters {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		padding-bottom: 16px;
+		margin-bottom: 8px;
+		border-bottom: 1px solid var(--line);
+	}
+	.filters a {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 12px;
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		color: var(--ink-2);
+		text-decoration: none;
+		font-size: 0.9rem;
+	}
+	.filters a > span:last-child {
+		font-family: var(--font-mono);
+		font-size: 0.78rem;
+		color: var(--muted);
+	}
+	.filters a:hover {
+		background: var(--surface-2);
+	}
+	.filters a[aria-current='page'] {
+		border-color: var(--ink);
+		color: var(--ink);
+		background: var(--surface);
+	}
+	.tags {
+		margin-top: 3rem;
+	}
+	.tags h2 {
+		font-size: 1rem;
+		margin: 0 0 10px;
+	}
+	.tags div {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+</style>

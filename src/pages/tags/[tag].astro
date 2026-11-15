@@ -1,0 +1,29 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { getPosts, groupTags, type Post } from '../../lib/posts';
+
+export async function getStaticPaths() {
+	return groupTags(await getPosts()).map(({ slug, label, posts }) => ({ params: { tag: slug }, props: { label, posts } }));
+}
+
+const { label, posts } = Astro.props as { label: string; posts: Post[] };
+---
+
+<Base title={`#${label}`} description={`Entries tagged ${label}.`}>
+	<div class="container wrap">
+		<p class="eyebrow"><a href="/writing/">Writing</a> / tag</p>
+		<h1>#{label}</h1>
+		<PostList posts={posts} />
+	</div>
+</Base>
+
+<style>
+	.wrap {
+		max-width: 52rem;
+		padding-top: 3rem;
+	}
+	.eyebrow a {
+		color: inherit;
+	}
+</style>

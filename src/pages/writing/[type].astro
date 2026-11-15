@@ -1,0 +1,18 @@
+---
+import Base from '../../layouts/Base.astro';
+import WritingIndex from '../../components/WritingIndex.astro';
+import { POST_TYPES, type PostType } from '../../consts';
+
+export function getStaticPaths() {
+	return (Object.keys(POST_TYPES) as PostType[]).map((type) => ({
+		params: { type: POST_TYPES[type].path },
+		props: { type },
+	}));
+}
+
+const { type } = Astro.props as { type: PostType };
+---
+
+<Base title={POST_TYPES[type].plural} description={POST_TYPES[type].blurb}>
+	<WritingIndex type={type} />
+</Base>
